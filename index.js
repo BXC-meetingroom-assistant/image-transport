@@ -20,8 +20,8 @@ const microsoftFaceAPI = {
     'Ocp-Apim-Subscription-Key': process.env.MICROSOFT_FACE_API,
   }
 }
-
-const imgName = `snap-${Date.now()}.jpg`
+const currentTimestamp = Date.now()
+const imgName = `snap-${currentTimestamp}.jpg`
 request
   .get('http://100.103.1.213/snap.jpg', options)
   .on('response', (response) => {
@@ -32,6 +32,26 @@ request
     console.log('done saving', imgName);
     return fs.createReadStream(imgName)
       .pipe(request.post(microsoftFaceAPI))
-      .pipe(process.stdout)
+      .on('data', (rawData) => {
+        var data = String(rawData)
+        const honoPayload = {
+          timestamp: currentTimestamp,
+          count: JSON.parse(data).length
+        }
+        const honoRequestOptions = {
+          uri: 'http://hono.bosch-iot-suite.com:8080/telemetry/bcx/meeting-room-assistant',
+          method: 'PUT',
+          headers: {
+            'content-type': 'application/json'
+          },
+          json: true,
+          body: honoPayload
+        }
+        return request(honoRequestOptions)
+          .on('response', (response) => {
+            console.log(response.headers);
+          })
+          .pipe(process.stdout)
+      })
   })
 
