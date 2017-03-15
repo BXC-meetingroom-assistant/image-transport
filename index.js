@@ -23,7 +23,7 @@ const microsoftFaceAPI = {
 const currentTimestamp = Date.now()
 const imgName = `snap-${currentTimestamp}.jpg`
 request
-  .get('http://100.103.1.213/snap.jpg', options)
+  .get('http://100.103.3.213/snap.jpg', options)
   .on('response', (response) => {
     microsoftFaceAPI.headers['content-length'] = response.headers['content-length']
   })
